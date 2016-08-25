@@ -1,0 +1,17 @@
+sos:
+  build: base/.
+  ports:
+    - "80:8080"
+  links:
+    - postgres
+postgres:
+  image: "kartoza/postgis" # https://hub.docker.com/r/kartoza/postgis/
+  environment:
+    - POSTGRES_USER=sos
+    - POSTGRES_PASS=secret
+    # ready to use database is called "gis"
+  ports:
+    - "5432:5432"
+
+# docker compose up
+# docker compose down -v
