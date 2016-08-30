@@ -3,7 +3,7 @@ MAINTAINER Daniel Nüst <daniel.nuest@uni-muenster.de>
 
 # Project: https://github.com/52North/sos
 
-RUN apk --no-cache add curl
+RUN apk --no-cache add curl unzip
 
 # Download release and deploy in Tomcat, see docs at https://wiki.52north.org/SensorWeb/SensorObservationServiceIVDocumentation
 WORKDIR /tmp
