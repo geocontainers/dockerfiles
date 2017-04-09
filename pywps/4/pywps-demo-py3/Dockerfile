@@ -1,0 +1,29 @@
+FROM alpine:latest
+MAINTAINER Jorge S. Mendes de Jesus <jorge.dejesus@geocat.net>
+
+RUN apk add --no-cache \
+	git \
+	gcc \
+	bash \
+	git \
+	openssh \
+	musl-dev  \
+	python3 \
+	python3-dev \
+	libxml2-dev  \
+	libxslt-dev \
+	linux-headers
+
+# waiting for some pulls to geopython
+RUN git clone https://github.com/jorgejesus/pywps-demo.git
+ 
+ WORKDIR /pywps-demo
+RUN pip3 install -r requirements.txt
+ 
+EXPOSE 5000 
+ENTRYPOINT ["/usr/bin/python3", "demo.py","-a"]
+
+# docker build -t pywps4:python3 . 
+# docker run -p 5000:5000 pywps4:python3
+# http://localhost:5000/wps?request=GetCapabilities&service=WPS
+#http://localhost:5000/wps?request=DescribeProcess&service=WPS&identifier=all&version=1.0.0
