@@ -1,33 +1,37 @@
-FROM alpine:3.4
+FROM python:2.7-alpine
+
 MAINTAINER Daniel Nüst <daniel.nuest@uni-muenster.de>
 
-# http://docs.pycsw.org/en/2.0.0/installation.html#for-developers-and-the-truly-impatient
+WORKDIR /tmp
 
-WORKDIR /
+ARG pycsw_version=2.0.2
+
 RUN apk add --no-cache \
-  #linux-headers \
-  build-base \
-  git \
-  python \
-  python-dev \
-  py-pip \
-  libxslt-dev \
-  libxml2-dev \
-  #py-libxml2 \
-  && git clone https://github.com/geopython/pycsw.git
+    build-base \
+    ca-certificates \
+    postgresql-dev \
+    python-dev \
+    libpq \
+    libxslt-dev \
+    libxml2-dev \
+    wget \
+  && apk add --no-cache \
+    --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
+    --allow-untrusted \
+      geos \
+  && wget https://github.com/geopython/pycsw/archive/${pycsw_version}.tar.gz \
+  && tar --extract --verbose --file ${pycsw_version}.tar.gz \
+  && pip install --requirement pycsw-${pycsw_version}/requirements-standalone.txt \
+  && pip install --requirement pycsw-${pycsw_version}/requirements-pg.txt \
+  && pip install pycsw-${pycsw_version}/ \
+  && pip install gunicorn \
+  && mkdir /etc/pycsw \
+  && mv pycsw-${pycsw_version}/default-sample.cfg /etc/pycsw/pycsw.cfg \
+  && rm -rf ${pycsw_version}.tar.gz \
+  && rm -rf pycsw-${pycsw_version}
 
-RUN apk add --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted \
-  geos
-
-WORKDIR /pycsw
-RUN pip install -e .
-RUN pip install -r requirements-standalone.txt
-
-COPY default.cfg default.cfg
-
-RUN pycsw-admin.py -c setup_db -f default.cfg
+ENV PYCSW_CONFIG=/etc/pycsw/pycsw.cfg
 
 EXPOSE 8000
-CMD ["python", "/pycsw/pycsw/wsgi.py"]
-# docker build -t pycsw .
-# docker run -p 80:8000 pycsw
+
+ENTRYPOINT ["gunicorn", "--workers=2", "--bind=0.0.0.0:8000", "--access-logfile", "-", "pycsw.wsgi"]
