@@ -1,26 +1,29 @@
-FROM alpine:3.4
-MAINTAINER Daniel Nüst <daniel.nuest@uni-muenster.de>
+FROM alpine:latest
+MAINTAINER Jorge S. Mendes de Jesus <jorge.dejesus@geocat.net>
 
-WORKDIR /
 RUN apk add --no-cache \
-  linux-headers \
-  build-base \
-  git \
-  python \
-  python-dev \
-  py-pip \
-  libxslt-dev \
-  libxml2-dev \
-  #py-libxml2 \
-  # http://geopython.github.io/pywps/docs/_build/html/install.html
-  && pip install -e git+https://github.com/geopython/pywps.git@master#egg=pywps-dev \
-  # https://github.com/geopython/pywps-demo
-  && git clone https://github.com/geopython/pywps-demo.git
+	git \
+	gcc \
+	bash \
+	git \
+	openssh \
+	musl-dev  \
+	python3 \
+	python3-dev \
+	libxml2-dev  \
+	libxslt-dev \
+	linux-headers
 
+# waiting for some pulls to geopython
+RUN git clone https://github.com/jorgejesus/pywps-demo.git
+ 
 WORKDIR /pywps-demo
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
+ 
+EXPOSE 5000 
+ENTRYPOINT ["/usr/bin/python3", "demo.py","-a"]
 
-EXPOSE 5000
-CMD ["python", "demo.py"]
-# docker build -t pywps-demo .
-# docker run -p 80:5000 pywps-demo
+#docker build -t pywps-demo . 
+#docker run -p 5000:5000 pywps-demo
+#http://localhost:5000/wps?request=GetCapabilities&service=WPS
+#http://localhost:5000/wps?request=DescribeProcess&service=WPS&identifier=all&version=1.0.0
