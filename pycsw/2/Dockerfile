@@ -33,7 +33,6 @@ RUN apk add --no-cache \
 
 COPY launch-pycsw.py /usr/bin/launch-pycsw
 
-
 RUN chmod a+x /usr/bin/launch-pycsw \
   && adduser -D -u 1000 user user \
   && mkdir -p /pycsw \
