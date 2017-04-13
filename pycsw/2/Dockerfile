@@ -4,7 +4,9 @@ MAINTAINER Daniel Nüst <daniel.nuest@uni-muenster.de>
 
 WORKDIR /tmp
 
-ARG pycsw_version=2.0.2
+ENV \
+  PYCSW_VERSION=2.0.2 \
+  PYCSW_CONFIG=/etc/pycsw/pycsw.cfg
 
 RUN apk add --no-cache \
     build-base \
@@ -18,20 +20,28 @@ RUN apk add --no-cache \
   && apk add --no-cache \
     --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
     --allow-untrusted \
-      geos \
-  && wget https://github.com/geopython/pycsw/archive/${pycsw_version}.tar.gz \
-  && tar --extract --verbose --file ${pycsw_version}.tar.gz \
-  && pip install --requirement pycsw-${pycsw_version}/requirements-standalone.txt \
-  && pip install --requirement pycsw-${pycsw_version}/requirements-pg.txt \
-  && pip install pycsw-${pycsw_version}/ \
-  && pip install gunicorn \
+    geos \
+  && wget https://github.com/geopython/pycsw/archive/${PYCSW_VERSION}.tar.gz \
+  && tar --extract --verbose --file ${PYCSW_VERSION}.tar.gz \
+  && pip install --requirement pycsw-${PYCSW_VERSION}/requirements-standalone.txt \
+  && pip install --requirement pycsw-${PYCSW_VERSION}/requirements-pg.txt \
+  && pip install pycsw-${PYCSW_VERSION}/ \
   && mkdir /etc/pycsw \
-  && mv pycsw-${pycsw_version}/default-sample.cfg /etc/pycsw/pycsw.cfg \
-  && rm -rf ${pycsw_version}.tar.gz \
-  && rm -rf pycsw-${pycsw_version}
+  && mv pycsw-${PYCSW_VERSION}/default-sample.cfg /etc/pycsw/pycsw.cfg \
+  && rm -rf ${PYCSW_VERSION}.tar.gz \
+  && rm -rf pycsw-${PYCSW_VERSION}
 
-ENV PYCSW_CONFIG=/etc/pycsw/pycsw.cfg
+COPY launch-pycsw.py /usr/bin/launch-pycsw
+
+
+RUN chmod a+x /usr/bin/launch-pycsw \
+  && adduser -D -u 1000 user user \
+  && mkdir -p /pycsw \
+  && chown -R 1000:1000 /pycsw \
+  && pip install pysu
 
 EXPOSE 8000
 
-ENTRYPOINT ["gunicorn", "--workers=2", "--bind=0.0.0.0:8000", "--access-logfile", "-", "pycsw.wsgi"]
+ENTRYPOINT ["launch-pycsw"]
+
+CMD ["run"]
