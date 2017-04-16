@@ -5,7 +5,6 @@ RUN apk add --no-cache \
 	git \
 	gcc \
 	bash \
-	git \
 	openssh \
 	musl-dev  \
 	python3 \
@@ -14,8 +13,7 @@ RUN apk add --no-cache \
 	libxslt-dev \
 	linux-headers
 
-# waiting for some pulls to geopython
-RUN git clone https://github.com/jorgejesus/pywps-demo.git
+RUN git clone https://github.com/geopython/pywps-demo.git
  
 WORKDIR /pywps-demo
 RUN pip3 install -r requirements.txt
